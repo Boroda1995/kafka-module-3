@@ -1,0 +1,9 @@
+kafka:
+  task1:
+    input-topic: task1-1
+    output-topic: task1-2
+  task2:
+    input-topic: task2
+  task3:
+    first-input-topic: task3-1
+    second-input-topic: task3-2

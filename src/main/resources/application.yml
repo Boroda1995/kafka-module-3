@@ -7,5 +7,6 @@ kafka:
   task3:
     first-input-topic: task3-1
     second-input-topic: task3-2
+    merge-duration: 30
   task4:
     input-topic: task4

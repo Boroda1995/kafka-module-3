@@ -28,6 +28,8 @@ import static org.apache.kafka.streams.StreamsConfig.*;
 @EnableKafkaStreams
 public class KafkaConfig {
 
+    @Value("${kafka.task3.merge-duration}")
+    private int mergeDuration;
     @Value("${kafka.task3.first-input-topic}")
     private String firstTopic;
 
@@ -40,7 +42,7 @@ public class KafkaConfig {
             APPLICATION_ID_CONFIG, "my-uid",
             BOOTSTRAP_SERVERS_CONFIG, "localhost:19092,localhost:29092,localhost:39092",
             AUTO_OFFSET_RESET_CONFIG, "earliest",
-            DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass().getName(),
+            DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName(),
             DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName(),
             DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class.getName()
         ));
@@ -48,13 +50,13 @@ public class KafkaConfig {
 
     @Bean
     public KStream<String, String> splitAndFilter(StreamsBuilder builder) {
-        KStream<Integer, String> firstStream = builder.stream(firstTopic);
-        KStream<Integer, String> secondStream = builder.stream(secondTopic);
+        KStream<String, String> firstStream = builder.stream(firstTopic);
+        KStream<String, String> secondStream = builder.stream(secondTopic);
 
-        KStream<Integer, String> firstFiltered = firstStream
+        KStream<String, String> firstFiltered = firstStream
             .filter((key, value) -> value != null && value.contains(":"));
 
-        KStream<Integer, String> secondFiltered = secondStream
+        KStream<String, String> secondFiltered = secondStream
             .filter((key, value) -> value != null && value.contains(":"));
 
         KStream<String, String> stream1 = firstFiltered.map((key, value) -> {
@@ -69,15 +71,13 @@ public class KafkaConfig {
         stream1.print(Printed.toSysOut());
         stream2.print(Printed.toSysOut());
 
-        stream1
+        KStream<String, String> join = stream1
             .join(stream2,
                 (leftValue, rightValue) -> String.join("-", leftValue, rightValue),
-                JoinWindows.ofTimeDifferenceWithNoGrace(Duration.ofSeconds(30)))
-            .foreach((key, value) -> System.out.println("Test"));
+                JoinWindows.ofTimeDifferenceWithNoGrace(Duration.ofSeconds(mergeDuration)));
 
-        stream1.print(Printed.toSysOut());
-
-        return stream1;
+        stream2.print(Printed.toSysOut());
+        return join;
     }
 
     @Bean

@@ -12,6 +12,7 @@ import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
 import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
 import org.springframework.kafka.config.KafkaStreamsConfiguration;
@@ -23,6 +24,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET
 import static org.apache.kafka.streams.StreamsConfig.*;
 
 @Configuration
+@EnableKafka
 @EnableKafkaStreams
 public class KafkaConfig {
 
@@ -64,7 +66,6 @@ public class KafkaConfig {
             return new KeyValue<>(newKey, value);
         });
 
-        // Print the key and value of each record to the console
         stream1.print(Printed.toSysOut());
         stream2.print(Printed.toSysOut());
 
